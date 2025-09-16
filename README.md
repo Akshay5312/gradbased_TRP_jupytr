@@ -6,7 +6,7 @@ The Trust Region Subproblem (which we will refer to as the TRP) is a Quadratical
 
 $$
 \min_{y \in \mathbb{R}^n} \quad \frac{1}{2} y^T Q y + g^T y \\
-	ext{s.t} \quad \|y\| \leq \delta
+	\text{s.t} \quad \|y\| \leq \delta
 $$
 
 where $Q$ is a Positive semi-definite matrix in $\mathbb{\delta}^{n \times n}$, and $g \in \mathbb{\delta}^n$. While I will not go in depth into the applications of solving the TRP, know that it is widely used. Solving the TRP is especially important in non-linear optimization with Interior Point Methods, optimization on reimannian manifolds, motion planning with contacts, etcetera. Methods to approximately solve the TRP exist (for instance, dog-leg methods and methods based on the Cauchy point). We will focus instead on methods to solve it exactly. 
@@ -16,7 +16,7 @@ We will not explicitly consider QCQPs with ellipsoidal constraints, such as:
 
 $$
 \min_{y \in \mathbb{R}^n} \quad \frac{1}{2} y^T Q y + g^T y \\
-	ext{s.t} \quad \|Cy + c\| \leq \delta
+	\text{s.t} \quad \|Cy + c\| \leq \delta
 $$
 
 As noted in More and Sorensons seminal work on [Computing A Trust Region Step](https://digital.library.unt.edu/ark:/67531/metadc283525/m2/1/high_res_d/metadc283525.pdf), the two problems are equivalent under change of variables (assuming $C$ is full rank).
@@ -104,7 +104,7 @@ Note (from (1)) that $y = -(Q+\lambda)^{-1}g$ is always an optimal solution to t
 
 $$
 \min_{y \in \mathbb{R}^{n}} \quad \frac{1}{2} y^T Q y + g^T y \\
-	ext{s.t.} \quad \|y\| = \|(Q+\lambda)^{-1}g\|
+	\text{s.t.} \quad \|y\| = \|(Q+\lambda)^{-1}g\|
 $$
 
 
@@ -294,9 +294,10 @@ We propose a new method that guarantees convergence to the correct root of the s
 
 ### The Optimal Curve
 Let us define $Y \subset \mathbb{\delta}^{N_y}$, the set of optimal solutions to the TRP with arbitrary desired radius. This is the set
-$$
-Y = \left\{ y \mid \exists \, \delta \text{ s.t. } y = \arg\min_{y \in \mathbb{R}^{N_y}} \frac{1}{2} y^T Q y + g^T y, \, \|y\| \leq \delta \right\}
-$$
+\begin{align*}
+
+Y = \{y \mid \exists \delta \text{ s.t. } y = \arg\min_{y \in \mathbb{R}^{N_y}} \frac{1}{2} y^T Q y + g^T y, \ \|y\| \leq \delta \}
+\end{align*}
 
 
 Every value $y* \in Y$ is the optimal solution to the TRP where $\delta = \|y^*\|$. This is a 1-dimensional manifold in the space of $\mathbb{\delta}^{N_y}$, hence, we will call it the optimal curve. In other literature, this may even be refered to as the optimal trajectory. The objective of the TRP solver can be viewed as finding the point where this curve intersects the desired $\delta$-ball.
