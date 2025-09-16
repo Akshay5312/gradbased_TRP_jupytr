@@ -1,21 +1,23 @@
 # The Trust Region Subproblem
 
 ## Introduction
-The Trust Region Subproblem (which we will refer to as the TRP) is a Quadratically Constrained Quadratic Program (QCQP) with a single norm constriant. This is a problem of the form 
 
-\begin{align*}
-\min_{y \in \mathbb{\delta}^n} \quad & \frac{1}{2} y^T Q y + g^T y \\
-\text{s.t} \quad & \|y\| \leq \delta
-\end{align*}
+The Trust Region Subproblem (which we will refer to as the TRP) is a Quadratically Constrained Quadratic Program (QCQP) with a single norm constraint. This is a problem of the form:
+
+$$
+\min_{y \in \mathbb{R}^n} \quad \frac{1}{2} y^T Q y + g^T y \\
+	ext{s.t} \quad \|y\| \leq \delta
+$$
 
 where $Q$ is a Positive semi-definite matrix in $\mathbb{\delta}^{n \times n}$, and $g \in \mathbb{\delta}^n$. While I will not go in depth into the applications of solving the TRP, know that it is widely used. Solving the TRP is especially important in non-linear optimization with Interior Point Methods, optimization on reimannian manifolds, motion planning with contacts, etcetera. Methods to approximately solve the TRP exist (for instance, dog-leg methods and methods based on the Cauchy point). We will focus instead on methods to solve it exactly. 
 
-We will not explicitly consider QCQPs with ellipsoidal constraints, such as 
 
-\begin{align*}
-\min_{y \in \mathbb{\delta}^n} \quad & \frac{1}{2} y^T Q y + g^T y \\
-\text{s.t} \quad & \|Cy + c\| \leq \delta
-\end{align*}
+We will not explicitly consider QCQPs with ellipsoidal constraints, such as:
+
+$$
+\min_{y \in \mathbb{R}^n} \quad \frac{1}{2} y^T Q y + g^T y \\
+	ext{s.t} \quad \|Cy + c\| \leq \delta
+$$
 
 As noted in More and Sorensons seminal work on [Computing A Trust Region Step](https://digital.library.unt.edu/ark:/67531/metadc283525/m2/1/high_res_d/metadc283525.pdf), the two problems are equivalent under change of variables (assuming $C$ is full rank).
 
@@ -63,36 +65,47 @@ print(f"The quadratic cost function is minimized {unconstrained_solution_norm:.2
 
 ### Optimality from the Tikhanov Regularized Least Squares
 
-Let us consider the KKT conditions of the TRP. For now, we restrict our analysis to problems where the solution is on the boundary of the feasible set. In this case, $\|y\|^2 = \delta$, and the complimentary slackness condition can be ignored. Thus, the KKT conditions are 
-\begin{align*}
+
+Let us consider the KKT conditions of the TRP. For now, we restrict our analysis to problems where the solution is on the boundary of the feasible set. In this case, $\|y\|^2 = \delta$, and the complimentary slackness condition can be ignored. Thus, the KKT conditions are:
+
+$$
 \nabla_y f(y) + \lambda y = (Qy + g) + y\lambda = 0 \\
 \lambda \geq 0 \\
-\|y\|^2 - \delta^2 = 0 
-\end{align*}
+\|y\|^2 - \delta^2 = 0
+$$
 
 
-Where $f(y)$ is the quadratic cost, and $\nabla_y f(y)$ is the gradient of the cost. Through algebraic maniputaion of the above conditions, we recover the following conditions for some pair of primal and dual variables ($y, \lambda$) to be valid
-$$y = -(Q+\lambda)^{-1}g \quad s.t \quad \|y\|^2 = \delta$$
 
-At the optimal dual variable ($\lambda^*$), thus, 
+Where $f(y)$ is the quadratic cost, and $\nabla_y f(y)$ is the gradient of the cost. Through algebraic manipulation of the above conditions, we recover the following conditions for some pair of primal and dual variables ($y, \lambda$) to be valid:
 
-\begin{equation}
+$$
+y = -(Q+\lambda)^{-1}g \quad \text{s.t.} \quad \|y\|^2 = \delta
+$$
+
+
+At the optimal dual variable ($\lambda^*$), thus,
+
+$$
 \|(Q+\lambda^*)^{-1}g\|^2 = \delta^2
-\end{equation}
+$$
 
 We recover $y$ from this dual variable as $y^* = -(Q+\lambda^*)^{-1}g$. 
 
-This is known as the Tikhanov Regularized Least Squares solution, and is also the solution to the problem 
-\begin{align*}
-\min_{y \in \mathbb{\delta}^n} \quad & \frac{1}{2} y^T Q y + g^T y + \lambda\|y\|^2
-\end{align*}
-where $\lambda$ is a regularization term. 
 
-Note (from (1)) that $y = -(Q+\lambda)^{-1}g$ is always an optimal solution to the problem 
-\begin{align*}
-    \min_{y \in \mathbb{\delta}^{n}} \quad & \frac{1}{2} y^T Q y + g^T y \\
-    \text{s.t} \quad & \|y\| = \|(Q+\lambda)^{-1}g\|
-\end{align*}
+This is known as the Tikhanov Regularized Least Squares solution, and is also the solution to the problem:
+
+$$
+\min_{y \in \mathbb{R}^n} \quad \frac{1}{2} y^T Q y + g^T y + \lambda\|y\|^2
+$$
+where $\lambda$ is a regularization term.
+
+
+Note (from (1)) that $y = -(Q+\lambda)^{-1}g$ is always an optimal solution to the problem:
+
+$$
+\min_{y \in \mathbb{R}^{n}} \quad \frac{1}{2} y^T Q y + g^T y \\
+	ext{s.t.} \quad \|y\| = \|(Q+\lambda)^{-1}g\|
+$$
 
 
 Established methods only need to search for appropriate $\lambda \geq 0$, such that $\|(Q+\lambda)^{-1}g\| = \delta$. 
@@ -281,23 +294,33 @@ We propose a new method that guarantees convergence to the correct root of the s
 
 ### The Optimal Curve
 Let us define $Y \subset \mathbb{\delta}^{N_y}$, the set of optimal solutions to the TRP with arbitrary desired radius. This is the set
-\begin{align*}
-Y = \{y \quad | \quad \exists \delta \quad s.t. \quad y= 
-    \begin{smallmatrix}
-    \min_{y \in \mathbb{\delta}^{N_y}} \quad & \frac{1}{2} y^T Q y + g^T y \\
-    \text{s.t} \quad & \|y\| \leq \delta
-    \end{smallmatrix}
-\}
-\end{align*}
+$$
+Y = \left\{ y \mid \exists \, \delta \text{ s.t. } y = \arg\min_{y \in \mathbb{R}^{N_y}} \frac{1}{2} y^T Q y + g^T y, \, \|y\| \leq \delta \right\}
+$$
 
 
 Every value $y* \in Y$ is the optimal solution to the TRP where $\delta = \|y^*\|$. This is a 1-dimensional manifold in the space of $\mathbb{\delta}^{N_y}$, hence, we will call it the optimal curve. In other literature, this may even be refered to as the optimal trajectory. The objective of the TRP solver can be viewed as finding the point where this curve intersects the desired $\delta$-ball.
 
 
 #### Intuition Behind The Optimal Curve
-$y \in Y$, by definition, is a value that respects the stationarity conditions of the TRP. When the unconstrained minimum is not in the ball ($ ||-Q^{-1} g|| > r$), the stationarity conditions enforce that the gradient of $f$ at the optimal point is in the opposite direction of the gradient of $||y||^2$, or that $$\nabla_y f(y^*) = - \lambda y^*$$ where $\lambda \geq 0 $. These gradients are the surface normals of the respective ellipsoids (the normals of the level set of $f$ containing $y^*$ and the ball $||y||^2 \leq r$). This indicates that the surface of these ellipsoids are tangent, and intersect only at $y^*$. Each point on this curve has an associated $\lambda(y)$ such that $y = Y^*(\lambda(y))$. From the above property, $\lambda(y \in Y)$ is given by $$\lambda(y) = \frac{||\nabla_yf(y)||}{||y||}$$. When the unconstrained optimum ($-Q^{-1} g$) is inside the ball, $\lambda(-Q^{-1} g) = \frac{||\nabla_yf(-Q^{-1} g)||}{||-Q^{-1} g||}$ still holds, with $\lambda = ||\nabla_yf(-Q^{-1} g)|| = 0$. Alternatively, as $\lambda$ approaches $\infty$, the associated optimal solution $Y^*(\lambda)$ approaches $0$. 
 
-The optimal curve is not only parameterized by $\lambda$, but can also be parameterized by the radius, $r = \|y\|$. We can recover the radius associated with the regularization term $\lambda$ as $r = \|Y^*(\lambda)\| = \|-(Q + \lambda I)^{-1}g\|$. This indicates an inversely proportional relationship between $\lambda$ and $r(\lambda) = \|Y^*(\lambda)\|$, or that $\frac{d}{d\lambda} \|Y^*(\lambda)\| \leq 0$. This makes intuitive sense. Note that $r = \|y\|$ is monotonically increasing on the curve (going from $0$ to some $r_{max} = \|-Q^{-1} g\|$), as one follows the curve from $y=0$ to the unconstrained solution, values which mark the boundary of $Y$. Alternatively, $\lambda(y)$ is monotonically decreasing in the same direction (from $\lambda(0) = \infty$ to $\lambda(-Q^{-1} g) = 0$), indicating a strict inverse relationship between $r$ and $\lambda$. 
+$y \in Y$, by definition, is a value that respects the stationarity conditions of the TRP. When the unconstrained minimum is not in the ball ($ ||-Q^{-1} g|| > r$), the stationarity conditions enforce that the gradient of $f$ at the optimal point is in the opposite direction of the gradient of $||y||^2$, or that
+$$
+\nabla_y f(y^*) = - \lambda y^*
+$$
+where $\lambda \geq 0$. These gradients are the surface normals of the respective ellipsoids (the normals of the level set of $f$ containing $y^*$ and the ball $||y||^2 \leq r$). This indicates that the surface of these ellipsoids are tangent, and intersect only at $y^*$. Each point on this curve has an associated $\lambda(y)$ such that $y = Y^*(\lambda(y))$. From the above property,
+$$
+\lambda(y) = \frac{||\nabla_yf(y)||}{||y||}
+$$
+When the unconstrained optimum ($-Q^{-1} g$) is inside the ball, $\lambda(-Q^{-1} g) = \frac{||\nabla_yf(-Q^{-1} g)||}{||-Q^{-1} g||}$ still holds, with $\lambda = ||\nabla_yf(-Q^{-1} g)|| = 0$. Alternatively, as $\lambda$ approaches $\infty$, the associated optimal solution $Y^*(\lambda)$ approaches $0$.
+
+
+The optimal curve is not only parameterized by $\lambda$, but can also be parameterized by the radius, $r = \|y\|$. We can recover the radius associated with the regularization term $\lambda$ as $r = \|Y^*(\lambda)\| = \|-(Q + \lambda I)^{-1}g\|$. This indicates an inversely proportional relationship between $\lambda$ and $r(\lambda) = \|Y^*(\lambda)\|$, or that
+$$
+\frac{d}{d\lambda} \|Y^*(\lambda)\| \leq 0
+$$
+This makes intuitive sense. Note that $r = \|y\|$ is monotonically increasing on the curve (going from $0$ to some $r_{max} = \|-Q^{-1} g\|$), as one follows the curve from $y=0$ to the unconstrained solution, values which mark the boundary of $Y$. Alternatively, $\lambda(y)$ is monotonically decreasing in the same direction (from $\lambda(0) = \infty$ to $\lambda(-Q^{-1} g) = 0$), indicating a strict inverse relationship between $r$ and $\lambda$.
+
 
 
 For brevity, we will not prove this "Bias-Variance tradeoff" here (proof can be found on the shared overleaf document). Important for later, we can also show that there is additionally a strictly increasing relationship between $\lambda$ and $\|\nabla_y f(Y^*(\lambda))\|$.
@@ -331,28 +354,45 @@ plt.show()
 
 ### Optimization using a new attractor function 
 
-Let us consider the discrete time system, 
-\begin{align}
-    \lambda^+ = \frac{||\nabla_y f(y^{-})||}{\delta} \\
-    y^+ = -(Q + \lambda^+)^{-1} g = Y^*(\lambda^+)
-\end{align}
-where $y^+$ is the value of the system at the next time-step and $\delta$ is the desired solution norm. Alternatively, we can consider  
-\begin{align}
-    \lambda^+ = \frac{||\nabla_y f( Y^*(\lambda^-) )||}{\delta}
-\end{align}
+
+Let us consider the discrete time system:
+$$
+\lambda^+ = \frac{||\nabla_y f(y^{-})||}{\delta} \\
+y^+ = -(Q + \lambda^+)^{-1} g = Y^*(\lambda^+)
+$$
+where $y^+$ is the value of the system at the next time-step and $\delta$ is the desired solution norm. Alternatively, we can consider:
+$$
+\lambda^+ = \frac{||\nabla_y f( Y^*(\lambda^-) )||}{\delta}
+$$
 
 
-Equilibrium is reached when $y^+ = Y^*(\frac{\|\nabla_y f(y^-) \|}{\delta}) = y^-$. In the case that $\|y^-\| = \delta$, $$Y^*\left(\frac{\|\nabla_y f(y^-) \|}{\delta}\right) = Y^*\left(\frac{\|\nabla_y f(y^-) \|}{\|y^-\|}\right) = Y^*\left(\lambda(y^-)\right)$$
+
+Equilibrium is reached when $y^+ = Y^*(\frac{\|\nabla_y f(y^-) \|}{\delta}) = y^-$. In the case that $\|y^-\| = \delta$,
+$$
+Y^*\left(\frac{\|\nabla_y f(y^-) \|}{\delta}\right) = Y^*\left(\frac{\|\nabla_y f(y^-) \|}{\|y^-\|}\right) = Y^*\left(\lambda(y^-)\right)
+$$
 
 From the definition of our optimal map, $Y^*(\lambda(y^-)) = y^-$ holds if $y \in Y$. 
 
 Thus, any $y \in Y$ such that $\|y\| = \delta$ is an equilibrium to the above system. These are also the conditions of optimality (stationarity and primal feasibility, respectively) to the given optimization problem, indicating that this equilibrium point is an optimal solution.
 
 
-While we leave the proof out of this document for brevity, we can also show that the above system does indeed converge to this equilibrium point, with $$\lambda^- > \lambda^+ > \lambda^{opt}$$ or $$\lambda^{opt} > \lambda^+ > \lambda^-$$, depending on the initial guess for $y$. Our updated value for $y$, essentially, is guaranteed to be bounded by the previous value and the optimal value.
 
-Our new iteration rule is simply 
-$$ \lambda^+ = \frac{\|f(Y^*(\lambda^-)\|}{\delta} = \lambda^- \frac{\|Y^*(\lambda^-)\|}{\delta}$$
+While we leave the proof out of this document for brevity, we can also show that the above system does indeed converge to this equilibrium point, with
+$$
+\lambda^- > \lambda^+ > \lambda^{opt}
+$$
+or
+$$
+\lambda^{opt} > \lambda^+ > \lambda^-
+$$
+depending on the initial guess for $y$. Our updated value for $y$, essentially, is guaranteed to be bounded by the previous value and the optimal value.
+
+
+Our new iteration rule is simply
+$$
+\lambda^+ = \frac{\|f(Y^*(\lambda^-)\|}{\delta} = \lambda^- \frac{\|Y^*(\lambda^-)\|}{\delta}
+$$
 
 
 ```python
